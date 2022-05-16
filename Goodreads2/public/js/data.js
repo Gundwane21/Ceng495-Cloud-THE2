@@ -46,3 +46,59 @@ const find_movies = async () => {
         movies_div.append(p);
     }
 };
+
+// USER ADD BOOK ACTION
+const addBook = async () => {
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
+
+    bookObj = 
+        {
+            "name": "Sherlock Holmes Red Case",
+            "author": "Arthur Conan Doyle",
+            "translator": "Kerem kerem",
+            "editor" : "Dummy editor",
+            "cover" : "https://www.w3schools.com",
+            "isFiction": true,
+            "publisher": "dummy publisher",
+            "genre" : "Crime",
+            "yearPublished": new ISODate("2021-01-15T06:31:15Z"),
+            "ratingAverage" : 8,
+            "allReviews": ["bad!","bad1!","bad2!"]
+        }
+
+}
+
+const getCollectionByLogin = async (dbName, collectionName) => {
+    try {
+        // Access the movies collection through MDB Realm & the readonly rule.
+        const mongodb = app.currentUser.mongoClient(ATLAS_SERVICE);
+        return mongodb.db(dbName).collection(collectionName);
+    } catch (err) {
+        $("#user").append("Need to login first.");
+        console.error("Need to log in first", err);
+        return;
+    }
+}
+
+
+
+// book table entry - document in mongo notation
+// {
+//     "_id": {
+//         "$oid": "628290f314570c239990ca05"
+//     },
+//     "name": "Sherlock Holmes Red Case",
+//     "author": "Arthur Conan Doyle",
+//     "translator": "Kerem kerem",
+//     "editor" : "Dummy editor",
+//     "cover" : "https://www.w3schools.com",
+//     "isFiction": true,
+//     "publisher": "dummy publisher",
+//     "genre" : "Crime",
+//     "yearPublished": new ISODate("2021-01-15T06:31:15Z"),
+//     "ratingAverage" : 8,
+//     "allReviews": ["bad!","bad1!","bad2!"]
+// }
+
+// year can not be added in the above form in 
+//    "yearPublished": "2021-01-15T06:31:15Z",
