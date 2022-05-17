@@ -14,7 +14,7 @@ const login = async () => {
 };
 
 // Function executed by the "FIND 20 MOVIES" button.
-const find_movies = async () => {
+const findMovies = async () => {
     let collMovies;
     try {
         // Access the movies collection through MDB Realm & the readonly rule.
@@ -53,7 +53,7 @@ const addBook = async () => {
 
     bookObj = 
         {
-            "name": "Sherlock Holmes Red Case",
+            "name": "Sherlock Holmes Red Case1",
             "author": "Arthur Conan Doyle",
             "translator": "Kerem kerem",
             "editor" : "Dummy editor",
@@ -61,11 +61,57 @@ const addBook = async () => {
             "isFiction": true,
             "publisher": "dummy publisher",
             "genre" : "Crime",
-            "yearPublished": new ISODate("2021-01-15T06:31:15Z"),
+            "yearPublished": { "$date": "2014-01-22T14:56:59.301Z" },
             "ratingAverage" : 8,
             "allReviews": ["bad!","bad1!","bad2!"]
         }
+    collBooks.insertOne(bookObj, function (err,res) {
+        if (err) throw err;
+        console.log("1 document inserted");
+    } );
+}
 
+// USER ADD BOOK ACTION
+const removeBook = async () => {
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
+    
+    bookObj = 
+        {
+            "name": "Sherlock Holmes Red Case1",
+            "author": "Arthur Conan Doyle",
+            "translator": "Kerem kerem",
+            "editor" : "Dummy editor",
+            "cover" : "https://www.w3schools.com",
+            "isFiction": true,
+            "publisher": "dummy publisher",
+            "genre" : "Crime",
+            "yearPublished": { "$date": "2014-01-22T14:56:59.301Z" },
+            "ratingAverage" : 8,
+            "allReviews": ["bad!","bad1!","bad2!"]
+        }
+    collBooks.insertOne(bookObj, function (err,res) {
+        if (err) throw err;
+        console.log("1 document inserted");
+    } );
+}
+
+
+// USER ADD BOOK ACTION
+const addUser = async () => {
+    let collUsers = await getCollectionByLogin("goodreads_db","users");
+
+    userObj = 
+        {
+            "username": "user1",
+            "booksReadCount": 0,
+            "favBooks": [],
+            "givenRatingsAvrg" : 0,
+            "givenReviews" : [],
+        }
+    collUsers.insertOne(userObj, function (err,res) {
+        if (err) throw err;
+        console.log("1 user document inserted");
+    } );
 }
 
 const getCollectionByLogin = async (dbName, collectionName) => {
