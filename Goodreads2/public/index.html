@@ -4,23 +4,87 @@
     <link rel="shortcut icon" type="image/png" href="https://www.mongodb.com/assets./images/global/favicon.ico"/>
     <script src="https://unpkg.com/realm-web@1.2.0/dist/bundle.iife.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <title>My Movie Titles</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Home Page</title>
 </head>
 <body>
 <h1>My Movies</h1>
 <div>
     <!-- Login anonymously -->
     <input type="submit" value="LOGIN" onClick="login()">
-    <!-- Finds first 20 movies in movies collection -->
-    <input type="submit" value="FIND 20 MOVIES" onClick="findMovies()">
+    
+<!-- 
+    "name": "Sherlock Holmes Red Case1",
+    "author": "Arthur Conan Doyle",
+    "translator": "Kerem kerem",
+    "editor" : "Dummy editor",
+    "cover" : "https://www.w3schools.com",
+    "isFiction": true,
+    "publisher": "dummy publisher",
+    "genre" : "Crime",
+    "yearPublished": { "$date": "2014-01-22T14:56:59.301Z" }, -->
+
+
+
     <!-- Insert a book -->
     <input type="submit" value="add book" onClick="addBook()">
+    <div class="container" style="width: 200px;">
+        <form id = "addBookForm">
+            <div class="form-group form-group-lg">
+                <input type="uname" class="form-control" placeholder="Enter book name">
+                <input type="uname" class="form-control" placeholder="Enter author name">
+                <input type="uname" class="form-control" placeholder="Enter translator name">
+                <input type="uname" class="form-control" placeholder="Enter editor name">
+                <input type="uname" class="form-control" placeholder="Enter translator name">
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+                <label class="form-check-label" for="flexRadioDefault1">
+                  Is Fiction
+                <!-- <input type="radio"  id="fiction">
+                <label for="fiction">Is Fiction</label><br> -->
+                <input type="date" value="2018-07-22" class="form-control" placeholder="Enter year it is published name">
+
+            </div>
+        <button type="submit" class="btn btn-primary"  >Add Book</button>
+        </form>
+    </div>
+    <!-- Remove a book -->
+    <input type="submit" value="remove book" onClick="removeBook()">
+    
+    <!-- Insert a user -->
+    <div class="container" style="width: 200px;">
+        <form id = "addUserForm">
+            <div class="form-group form-group-lg">
+            <label for="exampleInputUsername">Username</label>
+            <input type="uname" class="form-control" id="exampleInputUsername" aria-describedby="usernameHelp" placeholder="Enter username">
+            <small id="usernameHelp" class="form-text text-muted">Add user with this username to the dataset.</small>
+            </div>
+        <button type="submit" class="btn btn-primary"  >Add User</button>
+        </form>
+    </div>  
+
+    <!-- Remove a user -->
+    <div class="container" style="width: 200px;">
+        <form id = "removeUserForm">
+            <div class="form-group form-group-lg">
+            <label for="exampleInputUsername">Username</label>
+            <input type="uname" class="form-control" id="exampleInputUsername" aria-describedby="usernameHelp" placeholder="Enter username">
+            <small id="usernameHelp" class="form-text text-muted">Remove user with this username to the dataset.</small>
+            </div>
+        <button type="submit" class="btn btn-primary"  >Remove User</button>
+        </form>
+    </div>  
+
+    <!-- Goto Profile Page -->
+    <input type="submit" value="Go To Profile Page " onClick="gotoProfilePage()">
+    <a href="./profile.html">Link text here</a>
 </div>
 <!-- Using this div to display the user ID -->
 <div id="user"></div>
 <!-- Using this div to show the 20 movie titles -->
 <div id="movies"></div>
 <!-- Inside this file are the functions used above: login() and find_movies() -->
-<script src="js/data.js"></script>
+<script src="data.js"></script>
 </body>
 </html>
