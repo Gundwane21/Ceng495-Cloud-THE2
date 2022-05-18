@@ -26,24 +26,24 @@ const rateBook = async () => {
 
 // USER ADD BOOK ACTION
 
-const addBook = async () => {
+const addBook = async (bookObj) => {
     let collBooks = await getCollectionByLogin("goodreads_db","books");
-
-    bookObj = 
-        {
-            "name": "Sherlock Holmes Red Case1",
-            "author": "Arthur Conan Doyle",
-            "translator": "Kerem kerem",
-            "editor" : "Dummy editor",
-            "cover" : "https://www.w3schools.com",
-            "isFiction": true,
-            "publisher": "dummy publisher",
-            "genre" : "Crime",
-            "yearPublished": { "$date": "2014-01-22T14:56:59.301Z" },
-            "ratingAverage" : 0,
-            //add  numOfUsers to keep track of rating average
-            "allReviews": []
-        }
+    console.log(bookObj)
+    // bookObj = 
+    //     {
+    //         "name": "Sherlock Holmes Red Case1",
+    //         "author": "Arthur Conan Doyle",
+    //         "translator": "Kerem kerem",
+    //         "editor" : "Dummy editor",
+    //         "cover" : "https://www.w3schools.com",
+    //         "isFiction": true,
+    //         "publisher": "dummy publisher",
+    //         "genre" : "Crime",
+    //         "yearPublished": { "$date": "2014-01-22T14:56:59.301Z" },
+    //         "ratingAverage" : 0,
+    //         //add  numOfUsers to keep track of rating average
+    //         "allReviews": []
+    //     }
     collBooks.insertOne(bookObj, function (err,res) {
         if (err) throw err;
         console.log("1 document inserted");
@@ -60,14 +60,14 @@ $('#addBookForm').submit(function(event) {
     $_author= $('#addAuthorName').val();
     $_translator= $('#addTranslatorName').val();
     $_editor= $('#addEditorName').val();
+    $_publisher= $('#addPublisherName').val();
     $_coverLink= $('#addCoverLink').val();
+    $_isFiction = $("input[name='flexRadioDefault']:checked").val();
     $_genre= $('#AddGenre').val();
     $_datePub= $('#addBookDate').val();
-    
 
-    console.log($_author)
-    console.log($_genre)
     console.log($_datePub)
+    console.log(typeof($_datePub))
 
     obj = {
         "name": $_name,
@@ -75,13 +75,22 @@ $('#addBookForm').submit(function(event) {
         "translator": $_translator,
         "editor" : $_editor,
         "cover" : $_coverLink,
-        "isFiction": ,
-        "publisher": "dummy publisher",
-        "genre" : "Crime",
-        "yearPublished": { "$date": "2014-01-22T14:56:59.301Z" },
+        "isFiction": false,
+        "publisher": $_publisher,
+        "yearPublished": { "$date": new Date($_datePub) },
+        "ratingAverage" : 0,
+        "numOfUsers" : 0,
+        "allReviews": []
+
     }
 
-    // addUser($inputs.val())
+    // User selected fiction
+    if ($_isFiction){
+        obj["isFiction"] = true;
+        obj["genre"] = $_genre
+    }
+
+    addBook(obj)
 });
 
 // USER REMOVE BOOK ACTION
