@@ -2,6 +2,8 @@ const APP_ID = 'rhea-goodreads-app-sawog';
 const ATLAS_SERVICE = 'mongodb-atlas';
 const app = new Realm.App({id: APP_ID});
 
+var currentProfileUser = "";
+
 // Function executed by the LOGIN button.
 const login = async () => {
     const credentials = Realm.Credentials.anonymous();
@@ -13,14 +15,56 @@ const login = async () => {
     }
 };
 
+// get selected addUser JQUERY
+$('#loginButton1').submit(function(event) {
+    event.preventDefault();
+    login();    
+});
+
+
 // GOTO PROFILE PAGE
-const gotoProfilePage = () => {
-    window.location.href = "./profile.html"
+const buildProfilePage = async () => {
+
+    let collUsers = await getCollectionByLogin("goodreads_db","users");
+
+    currentProfileUser = localStorage.getItem("currentUser");
+    console.log(localStorage.getItem("currentUser"))
+    const user = await collUsers.findOne({ "username" : currentProfileUser  });
+    console.log("buildProfileCalled")
+    console.log(user);
+
+    if (user){
+        const header = ["User Attribute Names","User Attribute Values" ];
+        
+        const userAtrs = Object.keys(user);
+        const userAtrVals = Object.values(user);
+
+        tableCreate(header,userAtrs,userAtrVals);
+        console.log(user)
+    }
+
+    else{
+        const msg = "username "+ currentProfileUser + " does not exists!";
+        // alert(msg);
+    }
 }
+
+// get selected addUser JQUERY
+$('#gotoProfileForm').submit(function(event) {
+    event.preventDefault();
+    var name = $('#profileUsername').val();
+    console.log(typeof(name))
+    currentProfileUser = name;
+    localStorage.setItem("currentUser",name)
+    return false;
+});
 
 // RATE BOOK
 const rateBook = async () => {
+    const username = "user1"
     
+    // const bookname = 
+
 }
 
 
@@ -29,21 +73,7 @@ const rateBook = async () => {
 const addBook = async (bookObj) => {
     let collBooks = await getCollectionByLogin("goodreads_db","books");
     console.log(bookObj)
-    // bookObj = 
-    //     {
-    //         "name": "Sherlock Holmes Red Case1",
-    //         "author": "Arthur Conan Doyle",
-    //         "translator": "Kerem kerem",
-    //         "editor" : "Dummy editor",
-    //         "cover" : "https://www.w3schools.com",
-    //         "isFiction": true,
-    //         "publisher": "dummy publisher",
-    //         "genre" : "Crime",
-    //         "yearPublished": { "$date": "2014-01-22T14:56:59.301Z" },
-    //         "ratingAverage" : 0,
-    //         //add  numOfUsers to keep track of rating average
-    //         "allReviews": []
-    //     }
+
     collBooks.insertOne(bookObj, function (err,res) {
         if (err) throw err;
         console.log("1 document inserted");
@@ -56,7 +86,6 @@ $('#addBookForm').submit(function(event) {
     event.preventDefault();
 
     $_name= $('#addBookName').val();
-    // formData.set("name", $_pmNum);
     $_author= $('#addAuthorName').val();
     $_translator= $('#addTranslatorName').val();
     $_editor= $('#addEditorName').val();
@@ -77,7 +106,7 @@ $('#addBookForm').submit(function(event) {
         "cover" : $_coverLink,
         "isFiction": false,
         "publisher": $_publisher,
-        "yearPublished": { "$date": new Date($_datePub) },
+        "yearPublished": { "$date":(new Date($_datePub)).toISOString() },
         "ratingAverage" : 0,
         "numOfUsers" : 0,
         "allReviews": []
@@ -120,7 +149,7 @@ const removeBook = async () => {
 // USER ADD BOOK ACTION
 const addUser = async (username) => {
     let collUsers = await getCollectionByLogin("goodreads_db","users");
-
+    currentProfileUser =username;
     userObj = 
         {
             "username": username,
@@ -186,13 +215,125 @@ const getCollectionByLogin = async (dbName, collectionName) => {
     }
 }
 
+const getAllBooks = async () => {
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
+
+    const books = await collBooks.find({});
+    renderAllBooks(books);
+}
+
+function renderAllBooks(books) {
+
+    keys =[ "name",
+        "author",
+        "translator",
+        "editor" ,
+        "cover" ,
+        "isFiction",
+        "publisher",
+        "yearPublished",
+        "ratingAverage",
+        "numOfUsers",
+        "allReviews" ,
+        "isFiction", 
+        "Genre" ];
+
+    const    colNum = keys.length
+    const    rowNum = books.length;
+    let table = document.getElementById("allBooks");
+
+    let center = document.createElement('center');
+    let tbl = document.createElement('table');
+    tbl.setAttribute('border', '1');
+    let tbdy = document.createElement('tbody');
+  
+    //create thead
+    let thead = document.createElement('thead');
+    for (let j = 0; j < colNum; j++) {
+      let th = document.createElement('th');
+      th.setAttribute("scope","col");
+      th.textContent = keys[j];
+      thead.appendChild(th);
+    }
+      tbl.appendChild(thead);
+  
+    // create tbody
+    for (let i = 0; i < rowNum; i++) {
+      let tr = document.createElement('tr');
+    //   const values = Object.values(books[i]);
+      for (let j = 0; j < colNum; j++) {
+        let td = document.createElement('td');
+        td.setAttribute("scope","row");
+        if (books[i][keys[j]]){
+            td.textContent = books[i][keys[j]];
+        }
+        else{
+
+        }
+        td.style.fontSize='11px';
+        tr.appendChild(td);
+      }
+      tbdy.appendChild(tr);
+    }
+    tbl.appendChild(tbdy);
+    center.appendChild(tbl)
+
+    table.append(center);
+  }
+  getAllBooks();
 
 
 
 
 
+function tableCreate(header,userAtrs,userAtrVals) {
 
+    colNum = header.length
+    rowNum = userAtrs.length
 
+    let table = document.getElementById("profileTable");
+    let center = document.createElement('center');
+
+    let tbl = document.createElement('table');
+    tbl.setAttribute('border', '1');
+    let tbdy = document.createElement('tbody');
+  
+    //create thead
+    let thead = document.createElement('thead');
+    for (let j = 0; j < colNum; j++) {
+      let th = document.createElement('th');
+      th.setAttribute("scope","col");
+      th.textContent = header[j];
+      thead.appendChild(th);
+    }
+      tbl.appendChild(thead);
+  
+    // create tbody
+    for (let i = 0; i < rowNum; i++) {
+      let tr = document.createElement('tr');
+      for (let j = 0; j < colNum; j++) {
+        let td = document.createElement('td');
+        td.setAttribute("scope","row");
+        if (j===0){
+  
+            td.textContent = userAtrs[i];
+            td.style.fontSize = '16px';
+            tr.appendChild(td);
+        }
+        else{
+            td.textContent = userAtrVals[i];
+            td.style.fontSize='11px';
+            tr.appendChild(td);
+        }
+      }
+      tbdy.appendChild(tr);
+    }
+    tbl.appendChild(tbdy);
+    center.appendChild(tbl)
+    table.appendChild(center);
+
+  }
+buildProfilePage();
 
 
 

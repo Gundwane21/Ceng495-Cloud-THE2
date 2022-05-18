@@ -10,25 +10,46 @@
     <title>Home Page</title>
 </head>
 <body>
-<h1>My Movies</h1>
-<div>
-    <!-- Login anonymously -->
-    <input type="submit" value="LOGIN" onClick="login()">
-    
-<!-- 
-    "name": "Sherlock Holmes Red Case1",
-    "author": "Arthur Conan Doyle",
-    "translator": "Kerem kerem",
-    "editor" : "Dummy editor",
-    "cover" : "https://www.w3schools.com",
-    "isFiction": true,
-    "publisher": "dummy publisher",
-    "genre" : "Crime",
-    "yearPublished": { "$date": "2014-01-22T14:56:59.301Z" }, -->
 
-    <!-- Insert a book -->
-    <input type="submit" value="add book" onClick="addBook()">
-    <div class="container" style="width: 200px;">
+    <header>
+        <nav>
+            <ul class="nav">
+                <li>  <a href="./index.html"> Home  </a>> </li>
+                <li>  <a href="./profile.html"> Profile </a>> </li>
+                <li>  <a href="./books.html"> Books </a>> </li>
+            </ul>
+        </nav>
+    </header>
+
+<center>
+    <h1>Welcome to Rhea Book Manager </h1>
+    <p> We lets users keep track of their books, rate and review them</p>
+
+        <!-- Login anonymously -->
+    <input type="submit" value="LOGIN" onClick="login()">
+    <!-- <button type="submit" class="btn btn-primary" id="loginButton1"  >Login</button> -->
+    <!-- Go to selected usernames profile page -->
+
+</center>
+
+
+<div>
+    <div class="container" style="width: 200px; background-color: greenyellow;">
+        <form id = "gotoProfileForm">
+            <div class="form-group form-group-lg">
+            <label for="profileUsername"></label>
+            <input type="uname" class="form-control" id="profileUsername" aria-describedby="usernameHelp12" placeholder="Enter username">
+            <small id="usernameHelp"12 class="form-text text-muted">Submit a username for profile.</small>
+            </div>
+        <button type="submit" class="btn btn-primary"  >Set User Profile</button>
+        </form>
+        <br>
+    </div> 
+    
+    <br>
+
+    <div class="container" style="width: 200px; background-color: greenyellow;">
+        <br>
         <form id = "addBookForm">
             <div class="form-group form-group-lg">
                 <input type="uname" class="form-control" placeholder="Enter book name" id="addBookName">
@@ -50,9 +71,11 @@
                     <option value="6">Drama</option>
                   </select>
                 <input type="date" value="2018-07-22" class="form-control" placeholder="Enter year it is published name" id = "addBookDate">
-
             </div>
-        <button type="submit" class="btn btn-primary"  >Add Book</button>
+            <row>
+                <button type="submit" class="btn btn-primary"  >Add Book</button>
+                <button type="submit" class="btn btn-primary"  >Remove Book</button>        
+            </row>
         </form>
     </div>
     <!-- Remove a book -->
@@ -82,9 +105,8 @@
         </form>
     </div>  
 
-    <!-- Goto Profile Page -->
-    <input type="submit" value="Go To Profile Page " onClick="gotoProfilePage()">
-    <a href="./profile.html">Link text here</a>
+
+    <!-- <a href="./profile.html">Link text here</a> -->
 </div>
 <!-- Using this div to display the user ID -->
 <div id="user"></div>
