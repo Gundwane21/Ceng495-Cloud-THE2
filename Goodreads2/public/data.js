@@ -50,6 +50,15 @@ const addBook = async () => {
     } );
 }
 
+// get selected addBook JQUERY
+$('#addBookForm').submit(function(event) {
+    // get all the inputs into an array.
+    var $inputs = new FormData($('#addBookForm'));
+    console.log($inputs)
+    // addUser($inputs.val())
+    event.preventDefault();
+});
+
 // USER REMOVE BOOK ACTION
 const removeBook = async () => {
     let collBooks = await getCollectionByLogin("goodreads_db","books");
