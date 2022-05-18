@@ -53,10 +53,35 @@ const addBook = async () => {
 // get selected addBook JQUERY
 $('#addBookForm').submit(function(event) {
     // get all the inputs into an array.
-    var $inputs = new FormData($('#addBookForm'));
-    console.log($inputs)
-    // addUser($inputs.val())
     event.preventDefault();
+
+    $_name= $('#addBookName').val();
+    // formData.set("name", $_pmNum);
+    $_author= $('#addAuthorName').val();
+    $_translator= $('#addTranslatorName').val();
+    $_editor= $('#addEditorName').val();
+    $_coverLink= $('#addCoverLink').val();
+    $_genre= $('#AddGenre').val();
+    $_datePub= $('#addBookDate').val();
+    
+
+    console.log($_author)
+    console.log($_genre)
+    console.log($_datePub)
+
+    obj = {
+        "name": $_name,
+        "author": $_author,
+        "translator": $_translator,
+        "editor" : $_editor,
+        "cover" : $_coverLink,
+        "isFiction": ,
+        "publisher": "dummy publisher",
+        "genre" : "Crime",
+        "yearPublished": { "$date": "2014-01-22T14:56:59.301Z" },
+    }
+
+    // addUser($inputs.val())
 });
 
 // USER REMOVE BOOK ACTION
