@@ -6,6 +6,31 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        .nav {
+          overflow: hidden;
+          background-color: #333;
+        }
+        
+        .nav a {
+          float: left;
+          color: #f2f2f2;
+          text-align: center;
+          padding: 14px 16px;
+          text-decoration: none;
+          font-size: 17px;
+        }
+        
+        .nav a:hover {
+          background-color: #ddd;
+          color: black;
+        }
+        
+        .nav a.active {
+          background-color: #04AA6D;
+          color: white;
+        }
+            </style>
 
     <title>Home Page</title>
 </head>
@@ -52,6 +77,19 @@
         </form>
     </div>
 
+    <br>
+    <div class="container" style="width: 700px; background-color: greenyellow;">
+        <br>
+        <form id = "selectReviewForm">
+             <div class="form-group form-group-lg">
+                <small id="reviewChooseHelp" class="form-text text-muted">Above dropdown format is: Name,Author Name,Publisher</small>
+                <input type="text" class="form-control" aria-describedby="reviewBookHelp" placeholder="Write Review" id="reviewBookValue" >
+                <small id="reviewBookHelp" class="form-text text-muted">Select a book from dropdown and write a review for that specific book.</small>
+            <row>
+                <button type="submit" class="btn btn-primary"  >Select and Review Book</button>
+            </row>
+        </form>
+    </div>
     
     <div id="selectedBook">
 

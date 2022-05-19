@@ -7,6 +7,32 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
+    <style>
+.nav {
+  overflow: hidden;
+  background-color: #333;
+}
+
+.nav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.nav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.nav a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+    </style>
+
     <title>Home Page</title>
 </head>
 <body>
@@ -23,8 +49,7 @@
 
 <center>
     <h1>Welcome to Rhea Book Manager </h1>
-    <p> We lets users keep track of their books, rate and review them</p>
-
+    <p> We lets users keep track of their books, rate and review them. Push the  login button to start this journey</p>
         <!-- Login anonymously -->
     <input type="submit" value="LOGIN" onClick="login()">
     <!-- <button type="submit" class="btn btn-primary" id="loginButton1"  >Login</button> -->
@@ -34,7 +59,7 @@
 
 
 <div>
-    <div class="container" style="width: 600px; background-color: greenyellow;">
+    <div class="container" style="width: 600px; background-color: salmon;">
         <form id = "gotoProfileForm">
             <div class="form-group form-group-lg">
             <label for="profileUsername"></label>
@@ -78,9 +103,9 @@
             </row>
         </form>
     </div>
-    <!-- Remove a book -->
-    <!-- <input type="submit" value="remove book" onClick="removeBook()"> -->
     
+    <br>
+
     <!-- Insert a user -->
     <div class="container" style="width: 600px; background-color: cornflowerblue;">
         <form id = "addUserForm">

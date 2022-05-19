@@ -35,7 +35,8 @@ const buildProfilePage = async () => {
 
     if (user){
         const header = ["User Attribute Names","User Attribute Values" ];
-        
+        delete user["_id"];
+
         const userAtrs = Object.keys(user);
         const userAtrVals = Object.values(user);
 
@@ -380,10 +381,91 @@ $('#selectFavForm').submit(function(event) {
     makeFavBook(bookObj)
 });
 
+// Document types
+// userR [  ["book_id" , "review"] , , , ]
+// bookReviewList [[  "username": "review"] , , , ]
+
+const makeReview = async (bookObj,review) =>{
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
+    let collUsers = await getCollectionByLogin("goodreads_db","users");
+
+    currentProfileUser = localStorage.getItem("currentUser");
+
+    var bookDoc = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}, {"publisher":bookObj["publisher"]}]});
+    var userDoc = await collUsers.findOne({"username": currentProfileUser});
+
+    // Check if user is rated this book before! 
+    // If not rated can not do review
+    const ratersJSON = bookDoc["ratersJSON"];
+
+    console.log("makeReview method");
+    console.log(ratersJSON);
+    if ( currentProfileUser in ratersJSON) {
+        reviewListUserDoc = userDoc["givenReviews"];
+        var foundFlag = false;
+        for(let i = 0 ; i < reviewListUserDoc.length ;i++){
+            var listElem = reviewListUserDoc[i];
+            //book _id is in users review list 
+            if (   listElem[0] == bookDoc["_id"]  ){
+                foundFlag = true;
+                reviewListUserDoc[i][1] = review;
+                break;
+            }
+        }
+    
+        // book is NOT is users review list
+        if(!foundFlag){
+            reviewListUserDoc.push([userDoc["_id"],review]);
+        }
+        // update reviews in users doc
+        collUsers.updateOne({"_id": userDoc["_id"]} , { $set: {"givenReviews":reviewListUserDoc} })
+    
+        reviewListBookDoc = bookDoc["allReviews"];
+        var bookFoundFlag = false;
+        for(let i = 0 ; i < reviewListBookDoc.length ;i++){
+            var listElem = reviewListBookDoc[i];
+            // user username is in books review list
+            if( listElem[0] == userDoc["username"]){
+                bookFoundFlag = true;
+                reviewListBookDoc[i][1] = review;
+                break;
+            }
+        }
+        // user is NOT is books review list
+        if (!bookFoundFlag){
+            reviewListBookDoc.push([userDoc["username"],review]);
+        }
+        //update reviews in book doc
+        collBooks.updateOne({"_id": bookDoc["_id"]} , {$set : {"allReviews":reviewListBookDoc}});
+    
+    }
+}
 
 
+// get selected addUser JQUERY
+$('#selectReviewForm').submit(function(event) {
+    // get all the inputs into an array.
+    event.preventDefault();
+    var bookObj = getBookDropDown("selectReviewForm");
+    var review = $('#reviewBookValue').val();
+    console.log("selectReviewForm button submit");
+    console.log(review);
+    console.log(bookObj);
 
+    makeReview(bookObj,review);
 
+});
+
+const getBookDropDown  =  (formID) => {
+    const jqueryStr = '#'+formID
+    const text = $(jqueryStr).find(":selected").text();
+    const strings = text.split(",");
+    
+    bookObj = {
+        "name":strings[0],"author":strings[1],"publisher":strings[2]
+    };
+    return bookObj;
+}
 
 
 
@@ -395,7 +477,8 @@ $('#selectFavForm').submit(function(event) {
 const getAllBooks = async () => {
     let collBooks = await getCollectionByLogin("goodreads_db","books");
 
-    const books = await collBooks.find({});
+    var books = await collBooks.find({});
+    delete books["_id"];
     // console.log("getAllBoooks called");
     // console.log(books);
     renderAllBooks(books);
@@ -512,6 +595,7 @@ function tableCreate(header,userAtrs,userAtrVals) {
 getAllBooks();
 getAllBooks2("selectBookForm");
 getAllBooks2("selectFavForm");
+getAllBooks2("selectReviewForm");
 buildProfilePage();
 
 
