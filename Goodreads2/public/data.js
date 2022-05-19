@@ -88,10 +88,10 @@ $('#addBookForm').submit(function(event) {
     $_publisher= $('#addPublisherName').val();
     $_coverLink= $('#addCoverLink').val();
     $_isFiction = $("input[name='flexRadioDefault']:checked").val();
-    $_genre= $('#AddGenre').val();
+    $_genre= $('#AddGenre option:selected').text();
     $_datePub= $('#addBookDate').val();
 
-    console.log($_datePub)
+    console.log($_genre)
     console.log(typeof($_datePub))
 
     obj = {
@@ -105,8 +105,8 @@ $('#addBookForm').submit(function(event) {
         "yearPublished": { "$date":(new Date($_datePub)).toISOString() },
         "ratingAverage" : 0,
         "numOfUsers" : 0,
-        "allReviews": []
-
+        "allReviews": [],
+        "ratersJSON": {"default":0}
     }
 
     // User selected fiction
@@ -217,54 +217,117 @@ const getCollectionByLogin = async (dbName, collectionName) => {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// RATE BOOK
-const rateBook = async () => {
-    const username = "user1"
-    
-    // const bookname = 
+const getAllBooks2 = async () => {
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
 
+    const books = await collBooks.find({});
+    renderBooksDropDown(books);
 }
 
-const getBook = async (bookObj) => {
-    let collBooks = await getCollectionByLogin("goodreads_db","books");
-    
-    const book = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":author} , {"translator":translator} , {"editor":editor} , {"publisher":publisher}] });
+const renderBooksDropDown = (books) => {
+    var form = document.getElementById("selectBookForm");
+    console.log("renderBooksDropdown");
+    console.log(form);
+    var selectList = document.createElement("select");
+    selectList.text = "Select Book";
+    const num = books.length;
+    console.log(books);
+    for (let i = 0 ; i < num ; i++){
+        var newbook = books[i]["name"] + "," + books[i]["author"] + ","+ books[i]["publisher"] ;        
+        var optionElement = document.createElement("option");
+        optionElement.value = i;
+        optionElement.text = newbook;
+        optionElement.selected = false;
+        selectList.appendChild(optionElement);
+    }
+    console.log(form);
+    form.insertBefore(selectList,form.firstChild);
+}
 
-    if (book){
-        let html = document.getElementById("selectedBook");
-        name1 = document.createElement("p");
-        name1.textContent = book["name"];
-        author1 = document.createElement("p");
-        author1.textContent = book["author"];
-        html.appendChild(name1);
-        html.appendChild(author1);
+
+const rateBook = async (bookObj,givenRating) => {
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
+    let collUsers = await getCollectionByLogin("goodreads_db","users");
+
+    currentProfileUser = localStorage.getItem("currentUser");
+    
+
+    const bookDoc = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}, {"publisher":bookObj["publisher"]}]});
+    const ratersJSON = bookDoc["ratersJSON"];
+    console.log("rateBook method");
+    console.log(bookDoc);
+   
+    //get book average and readerCount 
+    var readerCount = bookDoc["numOfUsers"];
+    var ratingAverage = bookDoc["ratingAverage"];
+    var total = ratingAverage * readerCount;
+
+    // get  user readCount and ratingAverage
+    const userDoc = await collUsers.findOne({"username": currentProfileUser});
+    var booksReadCount = userDoc["booksReadCount"];
+    var givenRatingsAvrg = userDoc["givenRatingsAvrg"];
+    var totalGivenRatings = booksReadCount * givenRatingsAvrg ;
+
+    // query string for updating raters in books.ratersJSON json
+    const queryString = "ratersJSON."+currentProfileUser;
+
+    // user is NOT rated this book before do stuuf
+    if( !(currentProfileUser in ratersJSON)){
+        
+        total += givenRating;
+        readerCount +=1;
+        ratingAverage = total / readerCount;
+        console.log()
+        //update specific book properties
+        const updateDoc2 = await collBooks.updateOne({ "_id": bookDoc["_id"]} ,{$set : {"numOfUsers": readerCount }} , function (err,res) {
+            if (err) throw err;
+            console.log("update numOfUserBook");
+        } );
+
+        totalGivenRatings += givenRating;
+        booksReadCount +=1
+        givenRatingsAvrg = totalGivenRatings / booksReadCount;
+
+        //update specific user properties
+        const updateDoc5 = await collUsers.updateOne({ "_id": userDoc["_id"]} ,{$set : {"booksReadCount": booksReadCount }}  );
     }
+    // user is previously rated this book
     else{
-        alert("book is not valid");
+        // calculate book ratingAverage
+        const previousRating = ratersJSON[currentProfileUser];
+        total -= previousRating;
+        total += givenRating;
+        ratingAverage = total / readerCount;
+
+        //calculate user ratingAverage
+        totalGivenRatings -= previousRating;
+        totalGivenRatings += givenRating;
+        givenRatingsAvrg = totalGivenRatings / booksReadCount;
+
     }
+    ratersJSON[currentProfileUser] = givenRating;
+    // update book common 
+    const updateDoc = await collBooks.updateOne({ "_id": bookDoc["_id"]} ,{$set : {"ratersJSON": ratersJSON }}  );
+    const updateDoc3 = await collBooks.updateOne({ "_id": bookDoc["_id"]} ,{$set : {"ratingAverage": ratingAverage }}  );
+
+    //update user properties
+    const updateDoc4 = await collUsers.updateOne({ "_id": userDoc["_id"]} ,{$set : {"givenRatingsAvrg": givenRatingsAvrg }}  );
+
 }
 
 // get selected addUser JQUERY
 $('#selectBookForm').submit(function(event) {
     // get all the inputs into an array.
     event.preventDefault();
+    const text = $('#selectBookForm').find(":selected").text();
+    const rating = $('#rateBookValue').val();
+    const strings = text.split(",");
+    
+    bookObj = {
+        "name":strings[0],"author":strings[1],"publisher":strings[2]
+    };
 
-    $_name= $('#selectBookName').val();
-    $_author= $('#selectAuthorName').val();
-    $_translator= $('#selectTranslatorName').val();
-    $_editor= $('#selectEditorName').val();
-    $_publisher= $('#selectPublisherName').val();
-
-    obj = {
-        "name": $_name,
-        "author": $_author,
-        "translator": $_translator,
-        "editor" : $_editor,
-        "publisher": $_publisher,
-    }
-    console.log("Get this book"+$_name);
-    getBook(obj);
-
+    rateBook(bookObj,parseInt(rating))
 });
 
 
@@ -285,68 +348,59 @@ const getAllBooks = async () => {
     let collBooks = await getCollectionByLogin("goodreads_db","books");
 
     const books = await collBooks.find({});
+    // console.log("getAllBoooks called");
+    // console.log(books);
     renderAllBooks(books);
 }
 
 function renderAllBooks(books) {
 
-    keys =[ "name",
-        "author",
-        "translator",
-        "editor" ,
-        "cover" ,
-        "isFiction",
-        "publisher",
-        "yearPublished",
-        "ratingAverage",
-        "numOfUsers",
-        "allReviews" ,
-        "isFiction", 
-        "Genre" ];
-
-    const    colNum = keys.length
-    const    rowNum = books.length;
-    let table = document.getElementById("allBooks");
-
-    let center = document.createElement('center');
-    let tbl = document.createElement('table');
-    tbl.setAttribute('border', '1');
-    let tbdy = document.createElement('tbody');
-  
-    //create thead
-    let thead = document.createElement('thead');
-    for (let j = 0; j < colNum; j++) {
-      let th = document.createElement('th');
-      th.setAttribute("scope","col");
-      th.textContent = keys[j];
-      thead.appendChild(th);
-    }
-      tbl.appendChild(thead);
-  
-    // create tbody
-    for (let i = 0; i < rowNum; i++) {
-      let tr = document.createElement('tr');
-    //   const values = Object.values(books[i]);
-      for (let j = 0; j < colNum; j++) {
-        let td = document.createElement('td');
-        td.setAttribute("scope","row");
-        if (books[i][keys[j]]){
-            td.textContent = books[i][keys[j]];
+    if (books.length > 0){
+        keys = Object.keys(books[0]);
+        const    colNum = keys.length
+        const    rowNum = books.length;
+        let table = document.getElementById("allBooks");
+    
+        let center = document.createElement('center');
+        let tbl = document.createElement('table');
+        tbl.setAttribute('border', '1');
+        let tbdy = document.createElement('tbody');
+      
+        //create thead
+        let thead = document.createElement('thead');
+        for (let j = 0; j < colNum; j++) {
+          let th = document.createElement('th');
+          th.setAttribute("scope","col");
+          th.textContent = keys[j];
+          thead.appendChild(th);
         }
-        else{
-
+          tbl.appendChild(thead);
+      
+        // create tbody
+        for (let i = 0; i < rowNum; i++) {
+          let tr = document.createElement('tr');
+        //   const values = Object.values(books[i]);
+          for (let j = 0; j < colNum; j++) {
+            let td = document.createElement('td');
+            td.setAttribute("scope","row");
+            if (books[i][keys[j]]){
+                td.textContent = books[i][keys[j]];
+            }
+            else{
+    
+            }
+            td.style.fontSize='11px';
+            tr.appendChild(td);
+          }
+          tbdy.appendChild(tr);
         }
-        td.style.fontSize='11px';
-        tr.appendChild(td);
-      }
-      tbdy.appendChild(tr);
+        tbl.appendChild(tbdy);
+        center.appendChild(tbl)
+    
+        table.append(center);
+    
     }
-    tbl.appendChild(tbdy);
-    center.appendChild(tbl)
-
-    table.append(center);
   }
-  getAllBooks();
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -400,15 +454,16 @@ function tableCreate(header,userAtrs,userAtrVals) {
     table.appendChild(center);
 
   }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+getAllBooks();
+getAllBooks2();
 buildProfilePage();
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
 
 
 

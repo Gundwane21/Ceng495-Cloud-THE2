@@ -28,22 +28,19 @@
 
     </div>
 
-    <div class="container" style="width: 200px; background-color: greenyellow;">
+    <div class="container" style="width: 500px; background-color: greenyellow;">
         <br>
         <form id = "selectBookForm">
-            <div class="form-group form-group-lg">
-                <input type="uname" class="form-control" placeholder="Enter book name" id="selectBookName">
-                <input type="uname" class="form-control" placeholder="Enter author name" id="selectAuthorName">
-                <input type="uname" class="form-control" placeholder="Enter translator name" id="selectTranslatorName">
-                <input type="uname" class="form-control" placeholder="Enter editor name" id="selectEditorName">
-                <input type="uname" class="form-control" placeholder="Enter publisher" id="selectPublisherName">
-                </div>
+             <div class="form-group form-group-lg">
+                <small id="rateChooseHelp" class="form-text text-muted">Above dropdown format is: Name,Author Name,Publisher</small>
+                <input type="number" class="form-control" aria-describedby="rateBookHelp" placeholder="Enter Rate" id="rateBookValue" min="1" max="5" >
+                <small id="rateBookHelp" class="form-text text-muted">Select a book from dropdown and give rating between 1-5.</small>
             <row>
-                <button type="submit" class="btn btn-primary"  >Select Book</button>
+                <button type="submit" class="btn btn-primary"  >Select and Rate Book</button>
             </row>
         </form>
     </div>
-
+    
     <div id="selectedBook">
 
     </div>
