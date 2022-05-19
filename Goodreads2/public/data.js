@@ -37,6 +37,11 @@ const buildProfilePage = async () => {
         const header = ["User Attribute Names","User Attribute Values" ];
         delete user["_id"];
 
+        //sort the reviews on fav books and ratings
+        var sortedReviewList = await sortUsersReviews(user);
+        // console.log(sortedReviewList);
+        console.log(sortUsersReviews);
+
         const userAtrs = Object.keys(user);
         const userAtrVals = Object.values(user);
 
@@ -48,6 +53,54 @@ const buildProfilePage = async () => {
         const msg = "username "+ currentProfileUser + " does not exists!";
         // alert(msg);
     }
+}
+// return sorted [ [bookId,review] ]
+const sortUsersReviews = async (user) => {
+
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
+
+    var userReviewList = user["givenReviews"];
+    var favBooks = user["favBooks"];
+    var sortedReviews = [];
+    
+    if (favBooks.length > 0){
+        for(let i = 0 ; i <userReviewList.length ; i++){
+            var entry = userReviewList[i];
+            if(entry[0]== favBooks[0]){
+                sortedReviews.push(entry);
+                userReviewList.splice(i,1);
+                break;
+            }
+        }            
+    }
+
+    var rateArrayByBookIndices = []
+    // [ [rateValue, index in reviewArray ] , [] .. ]
+    for(let i = 0 ; i <userReviewList.length ; i++){
+        var entry = userReviewList[i];
+        const bookId = entry[0];
+        const bookDoc = await collBooks.findOne({"_id":bookId});
+        console.log("sortUsers method");
+        const ratersJSON = bookDoc["ratersJSON"];
+        const rateVal = ratersJSON[user["username"]];
+        rateArrayByBookIndices.push([rateVal,i]);
+    }            
+
+    rateArrayByBookIndices.sort((a,b) => b[0] - a[0] );
+    for(let i =  0 ; i < rateArrayByBookIndices.length; i++){
+        const maxRateIndex = rateArrayByBookIndices[i][1];
+        sortedReviews.push(userReviewList[maxRateIndex]);
+    }
+    console.log("WHILE RETURNING SORTED LIST");
+    console.log(userReviewList);
+    console.log(sortedReviews);
+    return sortedReviews;
+} 
+
+const mapBookIdToName = async (bookId) =>{
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
+    const bookDoc = collBooks.findOne({"_id":bookId});
+    return bookDoc["name"];
 }
 
 // get selected addUser JQUERY
@@ -112,7 +165,7 @@ $('#addBookForm button').click(function(event) {
             "ratingAverage" : 0,
             "numOfUsers" : 0,
             "allReviews": [],
-            "ratersJSON": {"default":0}
+            "ratersJSON": {}
         }
 
         // User selected fiction
@@ -141,10 +194,6 @@ const removeBook = async (bookObj) => {
 
     console.log("sent obj  parameters");
     console.log(bookObj);
-
-
-//     const book = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}  ,{"translator": bookObj["translator"]} ,{"publisher": bookObj
-// ["publisher"] }, { "editor" : bookObj["editor"]} ] });
 
     const book = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]} ,{"publisher": bookObj["publisher"] }] });
     console.log(book);
@@ -204,6 +253,7 @@ $('#addUserForm button').click(function(event) {
 // USER REMOVE BOOK ACTION
 const removeUser = async (username) => {
     let collUsers = await getCollectionByLogin("goodreads_db","users");
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
 
     const user = await collUsers.findOne({ "username" : username  });
     console.log(user);
@@ -213,6 +263,44 @@ const removeUser = async (username) => {
         _id = user._id
         console.log("chosen user id "+ _id)
         collUsers.deleteOne({"_id" : _id}) 
+
+        //delete reviews
+        const givenReviews = user["givenReviews"];
+        for (let i= 0; i < givenReviews.length ; i++){
+            const bookId = givenReviews[i][0];
+            var bookObj = collBooks.findOne({"_id":bookId});
+            var allReviews = bookObj["allReviews"];
+            for(let j=0; j < allReviews ;j++){
+                if(user["username"] == allReviews[j][0] ){
+                    allReviews.splice(j,1);
+                    break;    
+                }
+            }
+            // remove the selected review of user from books all reviews list and rewrite
+            collBooks.updateOne({"_id":bookObj["_id"]} ,{$set : {"allReviews":allReviews}} )
+        }
+
+        // get users rated books
+        const username = user["username"]
+        const query = { [`ratersJSON.${username}`]: { $exists : true } };
+        var ratedBookObjs = await collBooks.find(query);
+
+        // update rating values and ratingsJSON
+        ratedBookObjs.forEach((ratedBookObj) => {
+            const rateOfUser = ratedBookObj["ratersJSON"][username];
+            delete ratersJSON[username];
+            var numOfUsers = ratedBookObj["numOfUsers"];
+            var ratingAverage = ratedBookObj["ratingAverage"];
+            var totalRate = ratingAverage * numOfUsers; 
+            numOfUsers--;
+            totalRate -= rateOfUser;
+            ratingAverage = totalRate / numOfUsers;
+            await collBooks.updateOne({"_id":ratedBookObj["_id"]} , { $set : {"numOfUsers":numOfUsers} } );
+            await collBooks.updateOne({"_id":ratedBookObj["_id"]} , { $set : {"ratingAverage":ratingAverage} } );
+            await collBooks.updateOne({"_id":ratedBookObj["_id"]} , { $set : {"ratersJSON":ratersJSON} } );
+        })
+
+
         const msg = "User succesfully removed";
     }
     else{
@@ -359,7 +447,7 @@ const makeFavBook = async (bookObj) => {
     currentProfileUser = localStorage.getItem("currentUser");
     
     const bookDoc = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}, {"publisher":bookObj["publisher"]}]});
-    const favBookIds = [bookDoc["_id"]];
+    const favBookIds = [bookDoc["_id"],bookDoc["name"]];
 
     // update users favorite book as 1 element queue 
     const userDoc = await collUsers.updateOne({"username":currentProfileUser} , {$set : {"favBooks":favBookIds}});
@@ -415,7 +503,7 @@ const makeReview = async (bookObj,review) =>{
     
         // book is NOT is users review list
         if(!foundFlag){
-            reviewListUserDoc.push([userDoc["_id"],review]);
+            reviewListUserDoc.push([bookDoc["_id"],review,bookDoc["name"]]);
         }
         // update reviews in users doc
         collUsers.updateOne({"_id": userDoc["_id"]} , { $set: {"givenReviews":reviewListUserDoc} })
@@ -478,7 +566,10 @@ const getAllBooks = async () => {
     let collBooks = await getCollectionByLogin("goodreads_db","books");
 
     var books = await collBooks.find({});
-    delete books["_id"];
+    for(let i = 0 ; i < books.length ; i++){
+        delete books[i]["_id"];
+        delete books[i]["ratersJSON"];
+        }
     // console.log("getAllBoooks called");
     // console.log(books);
     renderAllBooks(books);
