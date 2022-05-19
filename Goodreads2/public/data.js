@@ -268,16 +268,16 @@ const removeUser = async (username) => {
         const givenReviews = user["givenReviews"];
         for (let i= 0; i < givenReviews.length ; i++){
             const bookId = givenReviews[i][0];
-            var bookObj = collBooks.findOne({"_id":bookId});
+            var bookObj = await collBooks.findOne({"_id":bookId});
             var allReviews = bookObj["allReviews"];
-            for(let j=0; j < allReviews ;j++){
+            for(let j=0; j < allReviews.length ;j++){
                 if(user["username"] == allReviews[j][0] ){
                     allReviews.splice(j,1);
                     break;    
                 }
             }
             // remove the selected review of user from books all reviews list and rewrite
-            collBooks.updateOne({"_id":bookObj["_id"]} ,{$set : {"allReviews":allReviews}} )
+            await collBooks.updateOne({"_id":bookObj["_id"]} ,{$set : {"allReviews":allReviews}} )
         }
 
         // get users rated books
@@ -285,29 +285,40 @@ const removeUser = async (username) => {
         const query = { [`ratersJSON.${username}`]: { $exists : true } };
         var ratedBookObjs = await collBooks.find(query);
 
-        // update rating values and ratingsJSON
-        ratedBookObjs.forEach((ratedBookObj) => {
-            const rateOfUser = ratedBookObj["ratersJSON"][username];
+        for(let i=0 ; i< ratedBookObjs.length ; i++){
+            const ratedBookObj = ratedBookObjs[i];
+            var ratersJSON = ratedBookObj["ratersJSON"];
+            const rateOfUser = ratersJSON[username];
+            console.log("rremovebook rate");
+            console.log(typeof(rateOfUser
+                ));
             delete ratersJSON[username];
             var numOfUsers = ratedBookObj["numOfUsers"];
             var ratingAverage = ratedBookObj["ratingAverage"];
             var totalRate = ratingAverage * numOfUsers; 
             numOfUsers--;
             totalRate -= rateOfUser;
-            ratingAverage = totalRate / numOfUsers;
+            if(numOfUsers !=0){
+                ratingAverage = totalRate / numOfUsers;
+            }
+            else{
+                ratingAverage = 0;
+            }
+            
             await collBooks.updateOne({"_id":ratedBookObj["_id"]} , { $set : {"numOfUsers":numOfUsers} } );
             await collBooks.updateOne({"_id":ratedBookObj["_id"]} , { $set : {"ratingAverage":ratingAverage} } );
             await collBooks.updateOne({"_id":ratedBookObj["_id"]} , { $set : {"ratersJSON":ratersJSON} } );
-        })
+        }
 
 
         const msg = "User succesfully removed";
+        alert(msg);
+
     }
     else{
         const msg = "username: " + username + " does not exist";
-        
+        alert(msg);    
     }
-    alert(msg);
 }
 
 
