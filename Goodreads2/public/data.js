@@ -77,67 +77,89 @@ const addBook = async (bookObj) => {
 }
 
 // get selected addBook JQUERY
-$('#addBookForm').submit(function(event) {
+$('#addBookForm button').click(function(event) {
     // get all the inputs into an array.
     event.preventDefault();
 
     $_name= $('#addBookName').val();
     $_author= $('#addAuthorName').val();
+    $_publisher= $('#addPublisherName').val();
     $_translator= $('#addTranslatorName').val();
     $_editor= $('#addEditorName').val();
-    $_publisher= $('#addPublisherName').val();
-    $_coverLink= $('#addCoverLink').val();
-    $_isFiction = $("input[name='flexRadioDefault']:checked").val();
-    $_genre= $('#AddGenre option:selected').text();
-    $_datePub= $('#addBookDate').val();
 
-    console.log($_genre)
-    console.log(typeof($_datePub))
+    console.log("addBook Form clicked");
+    console.log($(this).attr("value"));
+    if( $(this).attr("value") == "button-add-book"){
 
-    obj = {
-        "name": $_name,
-        "author": $_author,
-        "translator": $_translator,
-        "editor" : $_editor,
-        "cover" : $_coverLink,
-        "isFiction": false,
-        "publisher": $_publisher,
-        "yearPublished": { "$date":(new Date($_datePub)).toISOString() },
-        "ratingAverage" : 0,
-        "numOfUsers" : 0,
-        "allReviews": [],
-        "ratersJSON": {"default":0}
+        $_coverLink= $('#addCoverLink').val();
+        $_isFiction = $("input[name='flexRadioDefault']:checked").val();
+        $_genre= $('#AddGenre option:selected').text();
+        $_datePub= $('#addBookDate').val();
+
+        console.log($_genre)
+        console.log(typeof($_datePub))
+
+        obj = {
+            "name": $_name,
+            "author": $_author,
+            "translator": $_translator,
+            "editor" : $_editor,
+            "cover" : $_coverLink,
+            "isFiction": false,
+            "publisher": $_publisher,
+            "yearPublished": { "$date":(new Date($_datePub)).toISOString() },
+            "ratingAverage" : 0,
+            "numOfUsers" : 0,
+            "allReviews": [],
+            "ratersJSON": {"default":0}
+        }
+
+        // User selected fiction
+        if ($_isFiction){
+            obj["isFiction"] = true;
+            obj["genre"] = $_genre
+        }
+
+        addBook(obj)
     }
-
-    // User selected fiction
-    if ($_isFiction){
-        obj["isFiction"] = true;
-        obj["genre"] = $_genre
+    else if ( $(this).attr("value") == "button-remove-book"){
+        obj = {
+            "name": $_name,
+            "author": $_author,
+            "translator": $_translator,
+            "editor" : $_editor,
+            "publisher": $_publisher,
+        }
+        removeBook(obj);
     }
-
-    addBook(obj)
 });
 
 // USER REMOVE BOOK ACTION
-const removeBook = async () => {
+const removeBook = async (bookObj) => {
     let collBooks = await getCollectionByLogin("goodreads_db","books");
-    var bookName = "Sherlock Holmes Red Case1";
-    var author = "Arthur Conan Doyle";
 
-    const books = await collBooks.find({$or: [{"name":bookName} , {"author":author}] });
-    console.log(books);
+    console.log("sent obj  parameters");
+    console.log(bookObj);
+
+
+//     const book = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}  ,{"translator": bookObj["translator"]} ,{"publisher": bookObj
+// ["publisher"] }, { "editor" : bookObj["editor"]} ] });
+
+    const book = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]} ,{"publisher": bookObj["publisher"] }] });
+    console.log(book);
     
     // Ask the user which one to delete
-    if ( books.length > 0 ){
+    if ( book ){
         //hardcode now, TODO: Make user select later
-        chosenBook = books[0]
+        chosenBook = book
         _id = chosenBook._id
         console.log("chosen book id"+ _id)
         collBooks.deleteOne({"_id" : _id}) 
 
     }
     else{
-        console.log("Choose a book to delete")
+        const msg = "Selected book to remove is not correct, Make sure about parameters. Check Books tab of website to learn exact author name etc."
+        alert(msg);
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,12 +185,18 @@ const addUser = async (username) => {
 }
 
 // get selected addUser JQUERY
-$('#addUserForm').submit(function(event) {
-    // get all the inputs into an array.
+$('#addUserForm button').click(function(event) {
+    event.preventDefault();
+    console.log($(this).attr("value"))
     var $inputs = $('#addUserForm :input');
     console.log($inputs.val())
-    addUser($inputs.val())
-    event.preventDefault();
+    if ($(this).attr("value") == "button-add-user"){
+        
+        addUser($inputs.val());        
+    }
+    else if($(this).attr("value") == "button-remove-user" ){
+        removeUser($inputs.val());
+    }
 });
 
 
@@ -184,21 +212,14 @@ const removeUser = async (username) => {
         _id = user._id
         console.log("chosen user id "+ _id)
         collUsers.deleteOne({"_id" : _id}) 
-
+        const msg = "User succesfully removed";
     }
     else{
-        console.log("Choose a valid user to delete")
+        const msg = "username: " + username + " does not exist";
+        
     }
+    alert(msg);
 }
-
-// get selected addUser JQUERY
-$('#removeUserForm').submit(function(event) {
-    // get all the inputs into an array.
-    var $inputs = $('#removeUserForm :input');
-    console.log($inputs.val())
-    removeUser($inputs.val())
-    event.preventDefault();
-});
 
 
 const getCollectionByLogin = async (dbName, collectionName) => {
@@ -217,15 +238,15 @@ const getCollectionByLogin = async (dbName, collectionName) => {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-const getAllBooks2 = async () => {
+const getAllBooks2 = async (formIDString) => {
     let collBooks = await getCollectionByLogin("goodreads_db","books");
 
     const books = await collBooks.find({});
-    renderBooksDropDown(books);
+    renderBooksDropDown(books,formIDString);
 }
 
-const renderBooksDropDown = (books) => {
-    var form = document.getElementById("selectBookForm");
+const renderBooksDropDown = (books,formIDString) => {
+    var form = document.getElementById(formIDString);
     console.log("renderBooksDropdown");
     console.log(form);
     var selectList = document.createElement("select");
@@ -251,7 +272,6 @@ const rateBook = async (bookObj,givenRating) => {
 
     currentProfileUser = localStorage.getItem("currentUser");
     
-
     const bookDoc = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}, {"publisher":bookObj["publisher"]}]});
     const ratersJSON = bookDoc["ratersJSON"];
     console.log("rateBook method");
@@ -331,6 +351,34 @@ $('#selectBookForm').submit(function(event) {
 });
 
 
+const makeFavBook = async (bookObj) => {
+    let collBooks = await getCollectionByLogin("goodreads_db","books");
+    let collUsers = await getCollectionByLogin("goodreads_db","users");
+
+    currentProfileUser = localStorage.getItem("currentUser");
+    
+    const bookDoc = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}, {"publisher":bookObj["publisher"]}]});
+    const favBookIds = [bookDoc["_id"]];
+
+    // update users favorite book as 1 element queue 
+    const userDoc = await collUsers.updateOne({"username":currentProfileUser} , {$set : {"favBooks":favBookIds}});
+    
+}
+
+
+// get selected addUser JQUERY
+$('#selectFavForm').submit(function(event) {
+    // get all the inputs into an array.
+    event.preventDefault();
+    const text = $('#selectFavForm').find(":selected").text();
+    const strings = text.split(",");
+    
+    bookObj = {
+        "name":strings[0],"author":strings[1],"publisher":strings[2]
+    };
+
+    makeFavBook(bookObj)
+});
 
 
 
@@ -462,7 +510,8 @@ function tableCreate(header,userAtrs,userAtrVals) {
 
 
 getAllBooks();
-getAllBooks2();
+getAllBooks2("selectBookForm");
+getAllBooks2("selectFavForm");
 buildProfilePage();
 
 

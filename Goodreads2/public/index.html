@@ -34,7 +34,7 @@
 
 
 <div>
-    <div class="container" style="width: 200px; background-color: greenyellow;">
+    <div class="container" style="width: 600px; background-color: greenyellow;">
         <form id = "gotoProfileForm">
             <div class="form-group form-group-lg">
             <label for="profileUsername"></label>
@@ -48,7 +48,7 @@
     
     <br>
 
-    <div class="container" style="width: 200px; background-color: greenyellow;">
+    <div class="container" style="width: 600px; background-color: greenyellow;">
         <br>
         <form id = "addBookForm">
             <div class="form-group form-group-lg">
@@ -73,28 +73,29 @@
                 <input type="date" value="2018-07-22" class="form-control" placeholder="Enter year it is published name" id = "addBookDate">
             </div>
             <row>
-                <button type="submit" class="btn btn-primary"  >Add Book</button>
-                <button type="submit" class="btn btn-primary"  >Remove Book</button>        
+                <button type="submit" value="button-add-book" class="btn btn-primary"  >Add Book</button>
+                <button type="submit" value="button-remove-book" class="btn btn-primary"  >Remove Book</button>        
             </row>
         </form>
     </div>
     <!-- Remove a book -->
-    <input type="submit" value="remove book" onClick="removeBook()">
+    <!-- <input type="submit" value="remove book" onClick="removeBook()"> -->
     
     <!-- Insert a user -->
-    <div class="container" style="width: 200px;">
+    <div class="container" style="width: 600px; background-color: cornflowerblue;">
         <form id = "addUserForm">
             <div class="form-group form-group-lg">
             <label for="exampleInputUsername">Username</label>
             <input type="uname" class="form-control" id="exampleInputUsername" aria-describedby="usernameHelp" placeholder="Enter username">
             <small id="usernameHelp" class="form-text text-muted">Add user with this username to the dataset.</small>
             </div>
-        <button type="submit" class="btn btn-primary"  >Add User</button>
+        <button type="submit" value="button-add-user" class="btn btn-primary"  >Add User</button>
+        <button type="submit" value="button-remove-user" class="btn btn-primary"  >Remove User</button>
         </form>
     </div>  
 
     <!-- Remove a user -->
-    <div class="container" style="width: 200px;">
+    <!-- <div class="container" style="width: 200px;">
         <form id = "removeUserForm">
             <div class="form-group form-group-lg">
             <label for="exampleInputUsername">Username</label>
@@ -103,7 +104,7 @@
             </div>
         <button type="submit" class="btn btn-primary"  >Remove User</button>
         </form>
-    </div>  
+    </div>   -->
 
 
     <!-- <a href="./profile.html">Link text here</a> -->
