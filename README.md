@@ -4,13 +4,13 @@ HERE IS THE WEBSITE LINK:
 
 https://rhea-goodreads-app-sawog.mongodbstitch.com/
 
-DEVELOPMENT DECISIONS
+**DEVELOPMENT DECISIONS**
 
 I am using Realm static hosting as the host of this server. That was one of the requirements of the program. I used mongodb realm's anonymous user to use the application. User needs to push to login button to login to the application.
 
 Program has 3 pages. User is greeted with the home page. After logging in and adding a user. User can act as that user. User can use the * Set as User * form to sets himself/herself as that user by providing the desired username. By this option user can see different profile's properties.
 
-Profile Page:
+**Profile Page:**
 
 Profile page consists of a table providing users attributes. If the user has no rating or review or favorite book. These properties look empty. All reviews of the user as sorted as favorite books on top and regarding users rating for these reviewed book. User can not write a review if it is rated that book before. This is checked.
 
@@ -23,7 +23,9 @@ Book selection is made from a dropdown of all books in the database. Because mak
 
 Dropdown shows the book name, author, publisher. More fields could be shown but it would decrease usability.
 
-Books Page:
+Authors can not rate or make review. If they try we alert the webpage with regardin messages.
+
+**Books Page:**
 
 Books page has a big table giving all information about each book. It shows all of received reviews and its rating average. 
 
@@ -31,7 +33,7 @@ Books Table in books.html and user attribute table in profile,html is rendered d
 
 If no user is selected using ** set as username **  form profile page does not show any profile user attributes table.
 
-HomePage:
+**HomePage:**
 
 In homepage we can add/remove user by filling the form and submiting the regarding button. If you want to remove non existent username, we alert the website. After succesfull add and remove user is greated with a corresponding alert. 
 
@@ -52,7 +54,7 @@ While removing a book, we update
 
 I have two collections called. "users" and "books"
 
-* Users *
+**Users**
 - id : represents uniquely this document
 - username: unique username of the user
 - booksReadCount: integer representing rated book count
@@ -60,7 +62,7 @@ I have two collections called. "users" and "books"
 - givenRatingsAvrg: average rating given by this user as float
 - givenReviews: reviews as an array, each element of this array has the following properties: [ [ bookId, review, bookname] ...]
 
-* Books *
+**Books**
 - id: represents uniquely this document
 - name: string book name
 - author: array authors
