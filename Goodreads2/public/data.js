@@ -167,9 +167,9 @@ $('#addBookForm button').click(function(event) {
 
         obj = {
             "name": $_name,
-            "author": $_author,
-            "translator": $_translator,
-            "editor" : $_editor,
+            "author": $_author.split(",") ,
+            "translator": $_translator.split(","),
+            "editor" : $_editor.split(","),
             "cover" : $_coverLink,
             "isFiction": false,
             "publisher": $_publisher,
@@ -177,7 +177,8 @@ $('#addBookForm button').click(function(event) {
             "ratingAverage" : 0,
             "numOfUsers" : 0,
             "allReviews": [],
-            "ratersJSON": {}
+            "ratersJSON": {},
+            "genre" : ""
         }
 
         // User selected fiction
@@ -284,7 +285,7 @@ const removeBook = async (bookObj) => {
 
 
 // USER ADD BOOK ACTION
-const addUser = async (username) => {
+const addUser = async (username,$_isAuthor) => {
     let collUsers = await getCollectionByLogin("goodreads_db","users");
     currentProfileUser =username;
     userObj = 
@@ -295,6 +296,12 @@ const addUser = async (username) => {
             "givenRatingsAvrg" : 0,
             "givenReviews" : [],
         }
+    if($_isAuthor == "on"){
+        userObj["isAuthor"] =true;
+    }
+    else{
+        userObj["isAuthor"] =false;
+    }
     collUsers.insertOne(userObj, function (err,res) {
         if (err) throw err;
         console.log("1 user document inserted");
@@ -306,10 +313,11 @@ $('#addUserForm button').click(function(event) {
     event.preventDefault();
     console.log($(this).attr("value"))
     var $inputs = $('#addUserForm :input');
+    $_isAuthor = $("input[name='flexRadioDefault1']:checked").val();
     console.log($inputs.val())
     if ($(this).attr("value") == "button-add-user"){
         
-        addUser($inputs.val());        
+        addUser($inputs.val(),$_isAuthor);        
     }
     else if($(this).attr("value") == "button-remove-user" ){
         removeUser($inputs.val());
@@ -439,7 +447,7 @@ const rateBook = async (bookObj,givenRating) => {
 
     currentProfileUser = localStorage.getItem("currentUser");
     
-    const bookDoc = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}, {"publisher":bookObj["publisher"]}]});
+    var bookDoc = await collBooks.findOne({"name":bookObj["name"]} );
     const ratersJSON = bookDoc["ratersJSON"];
     console.log("rateBook method");
     console.log(bookDoc);
@@ -451,6 +459,10 @@ const rateBook = async (bookObj,givenRating) => {
 
     // get  user readCount and ratingAverage
     const userDoc = await collUsers.findOne({"username": currentProfileUser});
+    if( userDoc["isAuthor"] == true){
+        alert("Authors cannot rate books");
+        return;
+    }
     var booksReadCount = userDoc["booksReadCount"];
     var givenRatingsAvrg = userDoc["givenRatingsAvrg"];
     var totalGivenRatings = booksReadCount * givenRatingsAvrg ;
@@ -524,7 +536,7 @@ const makeFavBook = async (bookObj) => {
 
     currentProfileUser = localStorage.getItem("currentUser");
     
-    const bookDoc = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}, {"publisher":bookObj["publisher"]}]});
+    var bookDoc = await collBooks.findOne({"name":bookObj["name"]} );
     const favBookIds = [bookDoc["_id"],bookDoc["name"]];
 
     // update users favorite book as 1 element queue 
@@ -557,8 +569,13 @@ const makeReview = async (bookObj,review) =>{
 
     currentProfileUser = localStorage.getItem("currentUser");
 
-    var bookDoc = await collBooks.findOne({$and: [{"name":bookObj["name"]} , {"author":bookObj["author"]}, {"publisher":bookObj["publisher"]}]});
+    var bookDoc = await collBooks.findOne({"name":bookObj["name"]} );
     var userDoc = await collUsers.findOne({"username": currentProfileUser});
+
+    if( userDoc["isAuthor"] == true){
+        alert("Authors cannot make review");
+        return;
+    }
 
     // Check if user is rated this book before! 
     // If not rated can not do review
