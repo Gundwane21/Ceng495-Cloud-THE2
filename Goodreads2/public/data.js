@@ -40,8 +40,20 @@ const buildProfilePage = async () => {
         //sort the reviews on fav books and ratings
         var sortedReviewList = await sortUsersReviews(user);
         // console.log(sortedReviewList);
-        console.log(sortUsersReviews);
+        console.log(sortedReviewList);
 
+        var favBooks = user["favBooks"]
+        if (favBooks.length > 1){
+            user["favBooks"] = favBooks[1];
+        }
+
+        var reviewsForTable = [];
+        for(let i = 0 ; i < sortedReviewList.length; i++){
+            const entry = sortedReviewList[i];
+            printedVer = [entry[2],entry[1]];
+            reviewsForTable.push(printedVer);
+        }
+        user["givenReviews"] = reviewsForTable;
         const userAtrs = Object.keys(user);
         const userAtrVals = Object.values(user);
 
@@ -66,7 +78,7 @@ const sortUsersReviews = async (user) => {
     if (favBooks.length > 0){
         for(let i = 0 ; i <userReviewList.length ; i++){
             var entry = userReviewList[i];
-            if(entry[0]== favBooks[0]){
+            if(entry[0].toString() == favBooks[0].toString()){
                 sortedReviews.push(entry);
                 userReviewList.splice(i,1);
                 break;
@@ -730,7 +742,17 @@ function tableCreate(header,userAtrs,userAtrVals) {
             tr.appendChild(td);
         }
         else{
-            td.textContent = userAtrVals[i];
+            var innerHTML = ""
+            if (userAtrs[i]=="givenReviews"){
+                for (let m = 0 ; m < userAtrVals[i].length ; m++){
+                    innerHTML += userAtrVals[i][m];
+                    innerHTML += "<br>";
+                }
+                td.innerHTML = innerHTML;
+            }
+            else{
+                td.textContent = userAtrVals[i];
+            }
             td.style.fontSize='11px';
             tr.appendChild(td);
         }
@@ -755,60 +777,5 @@ getAllBooks2("selectFavForm");
 getAllBooks2("selectReviewForm");
 buildProfilePage();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// year can not be added in the above form in 
-//    "yearPublished": "2021-01-15T06:31:15Z",
-
-// Function executed by the "FIND 20 MOVIES" button.
-const findMovies = async () => {
-    let collMovies;
-    try {
-        // Access the movies collection through MDB Realm & the readonly rule.
-        const mongodb = app.currentUser.mongoClient(ATLAS_SERVICE);
-        collMovies = mongodb.db("sample_mflix").collection("movies");
-    } catch (err) {
-        $("#user").append("Need to login first.");
-        console.error("Need to log in first", err);
-        return;
-    }
-
-    // Retrieve 20 movie titles (only the titles thanks to the projection).
-    const movies_titles = await collMovies.find({}, {
-        "projection": {
-            "_id": 0,
-            "title": 1
-        },
-        "limit": 20
-    });
-
-    // Access the movies div and clear it.
-    let movies_div = $("#movies");
-    movies_div.empty();
-
-    // Loop through the 20 movie title and display them in the movies div.
-    for (const movie of movies_titles) {
-        let p = document.createElement("p");
-        p.append(movie.title);
-        movies_div.append(p);
-    }
-};
 
 
