@@ -191,6 +191,7 @@ $('#addBookForm button').click(function(event) {
 // USER REMOVE BOOK ACTION
 const removeBook = async (bookObj) => {
     let collBooks = await getCollectionByLogin("goodreads_db","books");
+    let collUsers = await getCollectionByLogin("goodreads_db","users");
 
     console.log("sent obj  parameters");
     console.log(bookObj);
@@ -204,7 +205,61 @@ const removeBook = async (bookObj) => {
         chosenBook = book
         _id = chosenBook._id
         console.log("chosen book id"+ _id)
-        collBooks.deleteOne({"_id" : _id}) 
+        collBooks.deleteOne({"_id" : _id})
+        
+        //look for all users whether this favbook exisst and update them
+        const usersOfFavBook = await collUsers.find({"favBooks": book["_id"]}); 
+        for(let i = 0 ; i < usersOfFavBook.length ;i++){
+            const user = usersOfFavBook[i];
+            await collUsers.updateOne({"_id":user["_id"]} , {$set : {"favBooks": [] }});
+        }
+
+        // look for givenRatings
+        const ratersJSON = book["ratersJSON"];
+        for (var key of Object.keys(ratersJSON)) {
+            
+            // get rated user
+            const username = key;
+            const givenRate = ratersJSON[key];
+            const userDoc =  await collUsers.findOne({"username":username});
+
+            //update rating
+            var booksReadCount = userDoc["booksReadCount"];
+            var givenRatingsAvrg = userDoc["givenRatingsAvrg"];
+            var totalRateGiven = booksReadCount * givenRatingsAvrg;
+            totalRateGiven -= givenRate;
+            booksReadCount --;
+            if (booksReadCount != 0){
+                givenRatingsAvrg = totalRateGiven / booksReadCount;
+            }else{
+                givenRatingsAvrg = 0;
+            }
+
+            await collUsers.updateOne({"_id": userDoc["_id"]} , {$set : {"booksReadCount" : booksReadCount}} );
+            await collUsers.updateOne({"_id": userDoc["_id"]} , {$set : {"givenRatingsAvrg" : givenRatingsAvrg}} );
+        }
+
+        // look for AllReviews
+        const allReviewsBook = book["allReviews"];
+        for (let i = 0 ; i < allReviewsBook.length ; i++){
+            const entry = allReviewsBook[i];
+            const username = entry[0];
+            const review = entry[1];
+
+            var userDoc = await collUsers.findOne({"username":username});
+            var givenReviews = userDoc["givenReviews"];
+            for(let j = 0 ; j < givenReviews.length ; j++){
+                var reviewTriple = givenReviews[j];
+                // if the reviews are same remove it from users review list 
+                if (reviewTriple[1]== review ){
+                    givenReviews.splice(i,1);
+                    break;
+                }
+            }
+            //update given reviews
+            await collUsers.updateOne({"_id":userDoc["_id"]} , {$set : { "givenReviews" : givenReviews}});
+        }
+        alert("Book succesfully removed");
 
     }
     else{
