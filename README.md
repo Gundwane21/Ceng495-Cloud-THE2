@@ -63,9 +63,9 @@ I have two collections called. "users" and "books"
 * Books *
 - id: represents uniquely this document
 - name: string book name
-- author: string author
-- editor : string editor 
-- translator: string translator
+- author: array authors
+- editor : array editors 
+- translator: array translators
 - cover: string link of cover
 - publisher: string publisher
 - numOfUsers: int num of user rated this book
