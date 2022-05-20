@@ -21,6 +21,8 @@ In profile page user can
 
 Book selection is made from a dropdown of all books in the database. Because making it a form would be too cumbersome for user. After any action done by the user respective book attribute is updated in books page.
 
+Dropdown shows the book name, author, publisher. More fields could be shown but it would decrease usability.
+
 Books Page:
 
 Books page has a big table giving all information about each book. It shows all of received reviews and its rating average. 
@@ -47,6 +49,32 @@ While removing a book, we update
 - all reviews that this book has from which users. User is updated. Reviews are sorted automatically again of these users and shown in profile page if this user is selected.
 
 # Database Design
+
+I have two collections called. "users" and "books"
+
+* Users *
+- id : represents uniquely this document
+- username: unique username of the user
+- booksReadCount: integer representing rated book count
+- favBooks: favorite books of user as array. At max 1 book can be favorite. Coded as an array to later be extended easily to a bigger queue.
+- givenRatingsAvrg: average rating given by this user as float
+- givenReviews: reviews as an array, each element of this array has the following properties: [ [ bookId, review, bookname] ...]
+
+* Books *
+- id: represents uniquely this document
+- name: string book name
+- author: string author
+- editor : string editor 
+- translator: string translator
+- cover: string link of cover
+- publisher: string publisher
+- numOfUsers: int num of user rated this book
+- isFiction: boolean 
+- yearPublished: Date
+- ratingAverage: average rate this book has
+- allReviews: array consisting of review, format: [ [username1,review1 ] , [username2,review2 ] ... ]
+- ratersJSON : JSON object having username: rate key value pairs, { "username1": givenRateValue , "username2": givenRateValue2   }
+- Genre: enum of the following 6 options [crime, fantasy, science-fiction, romance, horror, drama]
 
 
 
