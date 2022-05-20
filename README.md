@@ -79,6 +79,7 @@ I have two collections called. "users" and "books"
 - Genre: enum of the following 6 options [crime, fantasy, science-fiction, romance, horror, drama]
 
 
+All regarded updates when adding removing books,user. Making reviews and rates findOne and updateOne methods of mongodb is used with _id key.
 
 
 
